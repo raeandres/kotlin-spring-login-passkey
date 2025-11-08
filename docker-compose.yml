@@ -1,0 +1,58 @@
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: passkey-db
+    environment:
+      - POSTGRES_DB=passkeydb
+      - POSTGRES_USER=passkeyuser
+      - POSTGRES_PASSWORD=passkeypass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Optional: mount init scripts
+      # - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U passkeyuser -d passkeydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: springboot-kotlin-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring profiles
+      - SPRING_PROFILES_ACTIVE=prod
+      # Database configuration
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/passkeydb
+      - SPRING_DATASOURCE_USERNAME=passkeyuser
+      - SPRING_DATASOURCE_PASSWORD=passkeypass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      # JVM options
+      - JAVA_OPTS=-Xmx512m -Xms256m
+    volumes:
+      # Mount logs directory (optional)
+      - ./logs:/app/logs
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
