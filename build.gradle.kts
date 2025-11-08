@@ -24,6 +24,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+	//webauthn
+	// https://mvnrepository.com/artifact/com.webauthn4j/webauthn4j-core
+	implementation("com.webauthn4j:webauthn4j-core:0.30.0.RELEASE")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
